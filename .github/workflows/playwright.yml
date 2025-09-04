@@ -1,28 +1,38 @@
+# Name of the workflow
 name: Playwright Tests
 
+# Define the events that trigger this workflow
 on:
-  pull_request:
+  pull_request: # Trigger the workflow on pull requests to the main branch
     branches: [ main ]
-  push:
+  push: # Trigger the workflow on pushes to the main branch
     branches: [ main ]
 
+# Define the jobs in this workflow
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  test: # Job name
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner provided by GitHub
+
+    # Define the steps to execute in this job
     steps:
+      # Step 1: Check out the repository code
       - uses: actions/checkout@v4
 
+      # Step 2: Set up Node.js environment
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 20 # Specify the Node.js version to use
+          cache: 'npm' # Enable caching for npm dependencies
 
+      # Step 3: Install project dependencies
       - name: Install deps
-        run: npm ci
+        run: npm ci # Install dependencies using npm clean install
 
+      # Step 4: Install Playwright browsers
       - name: Install browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium # Install Playwright and Chromium browser dependencies
 
+      # Step 5: Run Playwright tests
       - name: Run tests
-        run: npx playwright test --reporter=github
+        run: npx playwright test --reporter=github # Run tests and generate a GitHub-compatible report
