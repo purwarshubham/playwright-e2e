@@ -35,7 +35,7 @@ jobs:
 
       # Step 5: Run Playwright tests
       - name: Run tests
-        run: npx playwright test --reporter=list,json,html --output=test-results > results.json || true
+        run: npx playwright test --reporter=json --reporter=html > results.json || true
 
       # Step 6: Extract test results from JSON  
       - name: Extract Test Results
@@ -65,12 +65,12 @@ jobs:
           retention-days: 7
         
 
-      # ---------- Slack Notification ----------
+      # Step 8: Slack Notification
       - name: Notify Slack
         if: always()
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: ${{ steps.results.outputs.passed }}\n:x: Failed: ${{ steps.results.outputs.failed }}\n:fast_forward: Skipped: ${{ steps.results.outputs.skipped }}\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
+            \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
           }" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
