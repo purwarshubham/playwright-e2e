@@ -37,18 +37,26 @@ jobs:
       - name: Run tests
         run: npx playwright test --reporter=json --reporter=html > results.json || true # Run tests and generate JSON and HTML reports, continue on failure
 
-      # Step 6: Extract test results from JSON  
+      # Step 6: Fix JSON into valid array
+      - name: Normalize JSON
+        run: |
+          echo "[" > results_fixed.json
+          sed '$!s/$/,/' results.json >> results_fixed.json
+          echo "]" >> results_fixed.json
+                  
+      # Step 7: Extract test results from JSON
       - name: Extract Test Results
         id: results
         run: |
-          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
-          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
-          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
-      
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results_fixed.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results_fixed.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results_fixed.json)
+
           echo "passed=$passed" >> $GITHUB_OUTPUT
           echo "failed=$failed" >> $GITHUB_OUTPUT
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
 
+      # Step 8: Upload playwright json results as artifacts     
       - name: Upload Playwright JSON results
         uses: actions/upload-artifact@v4
         with:
@@ -56,6 +64,7 @@ jobs:
           path: results.json
           retention-days: 7
 
+      # Step 9: Upload playwright html report as artifacts      
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
