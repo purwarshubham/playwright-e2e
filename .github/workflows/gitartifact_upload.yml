@@ -40,9 +40,7 @@ jobs:
       # Step 6: Fix JSON into valid array
       - name: Normalize JSON
         run: |
-          echo "[" > results_fixed.json
-          sed '$!s/$/,/' results.json >> results_fixed.json
-          echo "]" >> results_fixed.json
+          jq -s . results.json > results_fixed.json
                   
       # Step 7: Extract test results from JSON
       - name: Extract Test Results
