@@ -39,22 +39,22 @@ jobs:
 
       # Step 6: Extract test results from JSON  
       - name: Extract Test Results
-      id: results
-      run: |
-        passed=$(jq '.suites[].specs[].tests[] | select(.status=="passed")' results.json | wc -l)
-        failed=$(jq '.suites[].specs[].tests[] | select(.status=="failed")' results.json | wc -l)
-        skipped=$(jq '.suites[].specs[].tests[] | select(.status=="skipped")' results.json | wc -l)
-    
-        echo "passed=$passed" >> $GITHUB_OUTPUT
-        echo "failed=$failed" >> $GITHUB_OUTPUT
-        echo "skipped=$skipped" >> $GITHUB_OUTPUT
+        id: results
+        run: |
+          passed=$(jq '.suites[].specs[].tests[] | select(.status=="passed")' results.json | wc -l)
+          failed=$(jq '.suites[].specs[].tests[] | select(.status=="failed")' results.json | wc -l)
+          skipped=$(jq '.suites[].specs[].tests[] | select(.status=="skipped")' results.json | wc -l)
+      
+          echo "passed=$passed" >> $GITHUB_OUTPUT
+          echo "failed=$failed" >> $GITHUB_OUTPUT
+          echo "skipped=$skipped" >> $GITHUB_OUTPUT
 
       # ---------- Slack Notification ----------
       - name: Notify Slack
-      if: always()
-      run: |
-        curl -X POST -H 'Content-type: application/json' \
-        --data "{
-          \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: ${{ steps.results.outputs.passed }}\n:x: Failed: ${{ steps.results.outputs.failed }}\n:fast_forward: Skipped: ${{ steps.results.outputs.skipped }}\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
-        }" \
-        ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{
+            \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: ${{ steps.results.outputs.passed }}\n:x: Failed: ${{ steps.results.outputs.failed }}\n:fast_forward: Skipped: ${{ steps.results.outputs.skipped }}\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
+          }" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
