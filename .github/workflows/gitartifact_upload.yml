@@ -35,7 +35,7 @@ jobs:
 
       # Step 5: Run Playwright tests
       - name: Run tests
-        run: npx playwright test --reporter=json --reporter=html > results.json || true
+        run: npx playwright test --reporter=json > results.json || true
 
       # Step 6: Extract test results from JSON  
       - name: Extract Test Results
