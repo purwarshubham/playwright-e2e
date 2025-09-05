@@ -1,79 +1,74 @@
-# Name of the workflow
 name: Playwright Tests
 
-# Define the events that trigger this workflow
 on:
-  pull_request: # Trigger the workflow on pull requests to the main branch
+  push:
     branches: [ main ]
-  push: # Trigger the workflow on pushes to the main branch
-    branches: [ main ]
+  pull_request:
 
-# Define the jobs in this workflow
 jobs:
-  test: # Job name
-    runs-on: ubuntu-latest # Use the latest Ubuntu runner provided by GitHub
+  test:
+    runs-on: ubuntu-latest
 
-    # Define the steps to execute in this job
     steps:
-      # Step 1: Check out the repository code
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js environment
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # Specify the Node.js version to use
-          cache: 'npm' # Enable caching for npm dependencies
+          node-version: 18
 
-      # Step 3: Install project dependencies
-      - name: Install deps
-        run: npm ci # Install dependencies using npm clean install
+      - name: Install dependencies
+        run: npm ci
 
-      # Step 4: Install Playwright browsers
-      - name: Install browsers
-        run: npx playwright install --with-deps chromium # Install Playwright and Chromium browser dependencies
+      - name: Run Playwright tests (JSON + HTML + Allure)
+        run: |
+          npx playwright install --with-deps
+          npx playwright test --reporter=list,json=results.json,html,allure-playwright
 
-      # Step 5: Run Playwright tests
-      - name: Run tests
-        run: npx playwright test --reporter=json=results.json --reporter=html || true # Run tests and generate JSON and HTML reports, continue on failure
-
-
-      # Step 7: Extract test results from JSON
-      - name: Extract Test Results
+      - name: Extract test results
         id: results
         run: |
           passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
           failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
           skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
-      
+
           echo "passed=$passed" >> $GITHUB_OUTPUT
           echo "failed=$failed" >> $GITHUB_OUTPUT
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
 
-      # Step 8: Upload playwright json results as artifacts     
-      - name: Upload Playwright JSON results
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-results
-          path: results.json
-          retention-days: 7
-
-      # Step 9: Upload playwright html report as artifacts      
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-html-report
           path: playwright-report/
-          retention-days: 7
-        
 
-      # Step 8: Slack Notification
-      - name: Notify Slack
+      - name: Upload JSON results
         if: always()
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data "{
-            \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
-          }" \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-json-results
+          path: results.json
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
+
+      - name: Post results to Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {
+              "text": ":white_check_mark: Playwright Test Run Completed\n
+              *Passed:* ${{ steps.results.outputs.passed }}\n
+              *Failed:* ${{ steps.results.outputs.failed }}\n
+              *Skipped:* ${{ steps.results.outputs.skipped }}\n
+              *HTML Report:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts|Download Report>"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
