@@ -1,29 +1,43 @@
+# Reports are being created in json format and parsed using jq.
+# Extracting passed, failed, and skipped tests.  sending to Slack using a webhook.
+
+# Name of the workflow
 name: Playwright Tests
 
+# Define the events that trigger this workflow
 on:
-  push:
+  pull_request: # Trigger the workflow on pull requests to the main branch
     branches: [ main ]
-  pull_request:
+  push: # Trigger the workflow on pushes to the main branch
+    branches: [ main ]
 
+# Define the jobs in this workflow
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  test: # Job name
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner provided by GitHub
 
+    # Define the steps to execute in this job
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # Step 1: Check out the repository code
+      - uses: actions/checkout@v4
 
+      # Step 2: Set up Node.js environment
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20 # Specify the Node.js version to use
+          cache: 'npm' # Enable caching for npm dependencies
 
-      - name: Install dependencies
-        run: npm ci
+      # Step 3: Install project dependencies
+      - name: Install deps
+        run: npm ci # Install dependencies using npm clean install
+
+      # Step 4: Install Playwright browsers
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium # Install Playwright and Chromium browser dependencies
 
       - name: Run Playwright tests (JSON + HTML + Allure)
         run: |
-          npx playwright install --with-deps
           npx playwright test --reporter=list,json=results.json,html,allure-playwright
 
       - name: Extract test results
