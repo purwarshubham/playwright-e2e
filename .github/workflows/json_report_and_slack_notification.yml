@@ -1,3 +1,6 @@
+# Reports are being created in json format and parsed using jq.
+# Extracting passed, failed, and skipped tests.  sending to Slack using a webhook.
+
 # Name of the workflow
 name: Playwright Tests
 
@@ -33,11 +36,11 @@ jobs:
       - name: Install browsers
         run: npx playwright install --with-deps chromium # Install Playwright and Chromium browser dependencies
 
-      # Step 5: Run Playwright tests
+      # Step 5: Run Playwright tests and generate JSON report. Set to continue on failure by using '|| true'
       - name: Run tests
-        run: npx playwright test --reporter=json > results.json || true # Run tests and generate JSON and HTML reports, continue on failure
+        run: npx playwright test --reporter=json > results.json || true
 
-      # Step 6: Extract test results from JSON  
+      # Step 6: Extract test results from JSON using jq  
       - name: Extract Test Results
         id: results
         run: |
@@ -49,12 +52,12 @@ jobs:
           echo "failed=$failed" >> $GITHUB_OUTPUT
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
 
-      # Step 8: Slack Notification
+      # ---------- Slack Notification ----------
       - name: Notify Slack
         if: always()
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
+            \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: ${{ steps.results.outputs.passed }}\n:x: Failed: ${{ steps.results.outputs.failed }}\n:fast_forward: Skipped: ${{ steps.results.outputs.skipped }}\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
           }" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
