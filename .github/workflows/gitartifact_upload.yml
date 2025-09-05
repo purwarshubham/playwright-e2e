@@ -38,7 +38,7 @@ jobs:
 
       - name: Run Playwright tests (JSON + HTML + Allure)
         run: |
-          npx playwright test --reporter=json > results.json || true
+          npx playwright test || true
 
       - name: Extract test results
         id: results
