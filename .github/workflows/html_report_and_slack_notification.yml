@@ -38,7 +38,7 @@ jobs:
 
       # Step 5: Run Playwright tests and generate JSON report. Set to continue on failure by using '|| true'
       - name: Run tests
-        run: npx playwright test --reporter=json --reporter=html > results.json || true
+        run: npx playwright test --reporter=json=results.json --reporter=html > results.json || true
 
       # Step 6: Extract test results from JSON using jq  
       - name: Extract Test Results
