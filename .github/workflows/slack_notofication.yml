@@ -41,9 +41,9 @@ jobs:
       - name: Extract Test Results
         id: results
         run: |
-          passed=$(jq '.suites[].specs[].tests[] | select(.status=="passed")' results.json | wc -l)
-          failed=$(jq '.suites[].specs[].tests[] | select(.status=="failed")' results.json | wc -l)
-          skipped=$(jq '.suites[].specs[].tests[] | select(.status=="skipped")' results.json | wc -l)
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
       
           echo "passed=$passed" >> $GITHUB_OUTPUT
           echo "failed=$failed" >> $GITHUB_OUTPUT
