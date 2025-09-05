@@ -35,21 +35,17 @@ jobs:
 
       # Step 5: Run Playwright tests
       - name: Run tests
-        run: npx playwright test --reporter=json --reporter=html > results.json || true # Run tests and generate JSON and HTML reports, continue on failure
+        run: npx playwright test --reporter=json=results.json --reporter=html || true # Run tests and generate JSON and HTML reports, continue on failure
 
-      # Step 6: Fix JSON into valid array
-      - name: Normalize JSON
-        run: |
-          jq -s . results.json > results_fixed.json
-                  
+
       # Step 7: Extract test results from JSON
       - name: Extract Test Results
         id: results
         run: |
-          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results_fixed.json)
-          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results_fixed.json)
-          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results_fixed.json)
-
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
+      
           echo "passed=$passed" >> $GITHUB_OUTPUT
           echo "failed=$failed" >> $GITHUB_OUTPUT
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
