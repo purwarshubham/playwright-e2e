@@ -38,7 +38,7 @@ jobs:
 
       - name: Run Playwright tests (JSON + HTML + Allure)
         run: |
-          npx playwright test || true
+          npx playwright test --reporter=json > results.json || true
 
       - name: Extract test results
         id: results
@@ -65,12 +65,6 @@ jobs:
           name: playwright-json-results
           path: results.json
 
-      - name: Upload Allure results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: allure-results/
 
       - name: Post results to Slack
         if: always()
@@ -78,11 +72,7 @@ jobs:
         with:
           payload: |
             {
-              "text": ":white_check_mark: Playwright Test Run Completed\n
-              *Passed:* ${{ steps.results.outputs.passed }}\n
-              *Failed:* ${{ steps.results.outputs.failed }}\n
-              *Skipped:* ${{ steps.results.outputs.skipped }}\n
-              *HTML Report:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts|Download Report>"
+              "text": ":white_check_mark: Playwright Test Run Completed\\n*Passed:* ${{ steps.results.outputs.passed }}\\n*Failed:* ${{ steps.results.outputs.failed }}\\n*Skipped:* ${{ steps.results.outputs.skipped }}\\n*HTML Report:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts|Download Report>"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
