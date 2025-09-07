@@ -1,5 +1,6 @@
-# Reports are being created in json format and parsed using jq.
-# Extracting passed, failed, and skipped tests.  sending to Slack using a webhook.
+# We have added all type of reporters in the Playwright config file. Here we are running the tests and
+# Extracting passed, failed, and skipped tests.  Copying the artifacts to the workflow artifacts.
+# Sending test results to Slack using a webhook.
 
 # Name of the workflow
 name: Playwright Tests
@@ -36,10 +37,12 @@ jobs:
       - name: Install browsers
         run: npx playwright install --with-deps chromium # Install Playwright and Chromium browser dependencies
 
+      # Step 5: Run Playwright tests and generate reports
       - name: Run Playwright tests (JSON + HTML + Allure)
         run: |
           npx playwright test || true
 
+      # Step 6: Extract test results from JSON report
       - name: Extract test results
         id: results
         run: |
@@ -51,6 +54,7 @@ jobs:
           echo "failed=$failed" >> $GITHUB_OUTPUT
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
 
+      # Step 7a: Upload Html test reports as artifacts    
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,6 +62,7 @@ jobs:
           name: playwright-html-report
           path: playwright-report/
 
+      # Step 7b: Upload json report as artifact    
       - name: Upload JSON results
         if: always()
         uses: actions/upload-artifact@v4
@@ -75,3 +80,13 @@ jobs:
             \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
           }" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # Step 10: Slack notification - Another way to do it
+      # - name: Notify Slack
+      #   if: always()
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' \
+      #     --data "{
+      #       \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n*Allure Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
+      #     }" \
+      #     ${{ secrets.SLACK_WEBHOOK_URL }}
