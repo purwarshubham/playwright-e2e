@@ -66,13 +66,12 @@ jobs:
           path: results.json
 
 
-      - name: Post results to Slack
-        if: always()
+      - name: Notify Slack
         uses: slackapi/slack-github-action@v1.27.0
         with:
           payload: |
             {
-              "text": ":white_check_mark: Playwright Test Run Completed\\n*Passed:* ${{ steps.results.outputs.passed }}\\n*Failed:* ${{ steps.results.outputs.failed }}\\n*Skipped:* ${{ steps.results.outputs.skipped }}\\n*HTML Report:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts|Download Report>"
+              "text": "Playwright CI Results\\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\\n:x: Failed: *${{ steps.results.outputs.failed }}*\\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\\n\\n*Repo*: ${{ github.repository }}\\n*Branch*: ${{ github.ref_name }}\\n*Author*: ${{ github.actor }}\\n\\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts|Download Artifact>\\n\\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
