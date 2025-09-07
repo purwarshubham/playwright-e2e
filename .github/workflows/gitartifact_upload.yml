@@ -70,13 +70,6 @@ jobs:
           name: playwright-json-results
           path: results.json
 
-      - name: Deploy Playwright HTML report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./playwright-report
-          publish_branch: gh-pages
 
       # Step 8: Notify Slack with summary + link to HTML report artifact
       - name: Notify Slack
@@ -84,7 +77,7 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\n\n HTML2: *<https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+            \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
           }" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
 
@@ -97,4 +90,3 @@ jobs:
       #       \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n*Allure Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
       #     }" \
       #     ${{ secrets.SLACK_WEBHOOK_URL }}
-
