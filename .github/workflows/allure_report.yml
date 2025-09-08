@@ -44,7 +44,7 @@ jobs:
 
       # Step X: Install Allure CLI
       - name: Install Allure CLI
-        run: npm install -g allure-commandline --save-dev
+        run: npm install -g allure-commandline
 
       - name: Generate Allure Report
         if: always()
@@ -77,6 +77,12 @@ jobs:
         with:
           name: playwright-json-results
 
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/
 
       # Step 9: Send Slack notification
       - name: Notify Slack
