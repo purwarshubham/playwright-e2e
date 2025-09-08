@@ -26,6 +26,7 @@ export default defineConfig({
     ['list'], // pretty console output
     ['json', { outputFile: 'results.json' }], // JSON for parsing in GitHub Actions
     ['html', { outputFolder: 'playwright-report', open: 'never' }], // HTML report
+    ['allure-playwright'], // ✅ Allure report
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
