@@ -70,22 +70,7 @@ jobs:
         with:
           name: playwright-json-results
           path: results.json
-          
-      # Step 7c: Generate Allure Report
-      - name: Generate Allure Report
-        if: always()
-        uses: simple-elf/allure-report-action@v1.7
-        with:
-          allure_results: ./allure-results
-          allure_report: ./allure-report
 
-      # Step 7d: Upload Allure Report
-      - name: Upload Allure HTML Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report/
 
       # Step 9: Send Slack notification
       - name: Notify Slack
