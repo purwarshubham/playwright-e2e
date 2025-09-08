@@ -33,6 +33,10 @@ jobs:
       - name: Install deps
         run: npm ci # Install dependencies using npm clean install
 
+      # Step X: Install Allure CLI
+      - name: Install Allure CLI
+        run: npm install -g allure-commandline
+        
       # Step 4: Install Playwright browsers
       - name: Install browsers
         run: npx playwright install --with-deps chromium # Install Playwright and Chromium browser dependencies
@@ -42,13 +46,6 @@ jobs:
         run: |
           npx playwright test || true
 
-      # Step X: Install Allure CLI
-      - name: Install Allure CLI
-        run: npm install -g allure-commandline
-
-      - name: Generate Allure Report
-        if: always()
-        run: allure generate ./allure-results --clean -o ./allure-report
 
       # Step 6: Extract test results from JSON report
       - name: Extract test results
@@ -76,6 +73,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-json-results
+
+      - name: Generate Allure Report
+        if: always()
+        run: allure generate ./allure-results --clean -o ./allure-report
 
       - name: Upload Allure Report
         if: always()

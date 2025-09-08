@@ -1,5 +1,4 @@
 import { defineConfig, devices } from '@playwright/test';
-import path from 'path';
 
 /**
  * Read environment variables from file.
@@ -24,9 +23,9 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
-    ['list'],
-    ['json', { outputFile: path.join(__dirname, 'results.json') }], // absolute path
-    ['html', { outputFolder: path.join(__dirname, 'playwright-report'), open: 'never' }],
+    ['list'], // pretty console output
+    ['json', { outputFile: 'results.json' }], // JSON for parsing in GitHub Actions
+    ['html', { outputFolder: 'playwright-report', open: 'never' }], // HTML report
     ['allure-playwright']
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
