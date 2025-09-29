@@ -44,7 +44,7 @@ jobs:
       # Step 5: Run Playwright tests and generate reports
       - name: Run Playwright tests (JSON + HTML + Allure)
         run: |
-          npx playwright test || true
+          npx playwright test
 
 
       # Step 6: Extract test results from JSON report
