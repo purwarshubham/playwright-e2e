@@ -32,10 +32,6 @@ jobs:
       # Step 3: Install project dependencies
       - name: Install deps
         run: npm ci # Install dependencies using npm clean install
-
-      # Step X: Install Allure CLI
-      - name: Install Allure CLI
-        run: npm install -g allure-commandline
         
       # Step 4: Install Playwright browsers
       - name: Install browsers
