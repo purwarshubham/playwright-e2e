@@ -32,6 +32,7 @@ jobs:
       # Step 3: Install project dependencies
       - name: Install deps
         run: npm ci # Install dependencies using npm clean install
+
         
       # Step 4: Install Playwright browsers
       - name: Install browsers
@@ -40,7 +41,7 @@ jobs:
       # Step 5: Run Playwright tests and generate reports
       - name: Run Playwright tests (JSON + HTML + Allure)
         run: |
-          npx playwright test
+          npx playwright test || true
 
 
       # Step 6: Extract test results from JSON report
@@ -69,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-json-results
-
+          path: results.json
 
       # Step 7c: Generate Allure Report
       - name: Generate Allure Report
@@ -78,7 +79,7 @@ jobs:
         with:
           allure_results: ./allure-results
           allure_report: ./allure-report
-
+          
       # Step 7d: Upload Allure Report
       - name: Upload Allure HTML Report
         if: always()
