@@ -1,6 +1,7 @@
 # We have added all type of reporters in the Playwright config file. Here we are running the tests and
 # Extracting passed, failed, and skipped tests.  Copying the artifacts to the workflow artifacts.
-# Sending test results to Slack using a webhook.
+# Sending test results to Slack using a webhook. 
+# This workflow contains the zip files 
 
 # Name of the workflow
 name: Playwright Tests
@@ -94,16 +95,6 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"*Playwright CI Results* 🚀\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n:page_facing_up: *Allure Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n:scroll: *Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
+            \"text\": \"*Playwright CI Results* 🚀\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}*\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://purwarshubham.github.io/playwright-e2e/playwright-report/|Open Report>\n:page_facing_up: *Allure Report*: <https://purwarshubham.github.io/playwright-e2e/allure-report/|Open Report>\n\n:scroll: *Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
           }" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      # Step 10: Slack notification - Another way to do it
-      # - name: Notify Slack
-      #   if: always()
-      #   run: |
-      #     curl -X POST -H 'Content-type: application/json' \
-      #     --data "{
-      #       \"text\": \"Playwright CI Results\n\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n*Allure Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
-      #     }" \
-      #     ${{ secrets.SLACK_WEBHOOK_URL }}
