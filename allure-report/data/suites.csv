@@ -1,0 +1,5 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Tue Sep 30 09:02:18 GMT 2025","Tue Sep 30 09:02:18 GMT 2025","56","chromium","basic.spec.ts","","","","Validate Sum",""
+"passed","Tue Sep 30 09:02:19 GMT 2025","Tue Sep 30 09:02:20 GMT 2025","385","chromium","example.spec.ts","","","","has title",""
+"passed","Tue Sep 30 09:02:20 GMT 2025","Tue Sep 30 09:02:20 GMT 2025","408","chromium","example.spec.ts","","","","get started link",""
+"failed","Tue Sep 30 09:02:19 GMT 2025","Tue Sep 30 09:02:19 GMT 2025","58","chromium","basic.spec.ts","","","","Validate Multiplication - Expecting failure",""
