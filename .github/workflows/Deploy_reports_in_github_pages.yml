@@ -60,14 +60,16 @@ jobs:
           publish_branch: gh-pages
           destination_dir: playwright-html-report
 
-      # Step 7c: Deploy Allure HTML Report to GitHub Pages
-      - name: Deploy Allure Report
-        uses: peaceiris/actions-gh-pages@v6
+      # Step 7e: Deploy Allure Report to GitHub Pages
+      - name: Deploy Allure Report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
+          publish_dir: allure-report
           publish_branch: gh-pages
-          destination_dir: allure-report
+          user_name: 'GitHub Actions'
+          user_email: 'actions@github.com'
 
       # Step 8: Send Slack notification
       - name: Notify Slack
