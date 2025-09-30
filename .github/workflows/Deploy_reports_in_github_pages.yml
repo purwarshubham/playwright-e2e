@@ -53,12 +53,15 @@ jobs:
 
       # Step 7b: Deploy HTML Playwright report to GitHub Pages
       - name: Deploy Playwright HTML Report
-        uses: peaceiris/actions-gh-pages@v6
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./playwright-report
           publish_branch: gh-pages
           destination_dir: playwright-html-report
+          user_name: 'GitHub Actions'
+          user_email: 'actions@github.com'
 
       # Step 7e: Deploy Allure Report to GitHub Pages
       - name: Deploy Allure Report to GitHub Pages
@@ -68,6 +71,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: allure-report
           publish_branch: gh-pages
+          destination_dir: allure-report
           user_name: 'GitHub Actions'
           user_email: 'actions@github.com'
 
