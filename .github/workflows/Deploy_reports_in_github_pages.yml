@@ -1,5 +1,8 @@
 name: Playwright Tests
 
+permissions:
+  contents: write  # Allow pushing commits to gh-pages
+
 on:
   push:
     branches: [ main ]
