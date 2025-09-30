@@ -4,7 +4,6 @@
 # Sends Slack notifications with links that open directly in the browser.
 # Handles permissions correctly with GITHUB_TOKEN.
 
-
 name: Playwright Tests
 
 permissions:
