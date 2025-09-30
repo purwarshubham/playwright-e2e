@@ -1,3 +1,10 @@
+# Runs your Playwright tests.
+# Generates HTML and Allure reports.
+# Deploys both reports to GitHub Pages.
+# Sends Slack notifications with links that open directly in the browser.
+# Handles permissions correctly with GITHUB_TOKEN.
+
+
 name: Playwright Tests
 
 permissions:
