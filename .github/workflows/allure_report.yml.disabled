@@ -6,6 +6,7 @@
 # Name of the workflow
 name: Playwright Tests
 
+ 
 # Define the events that trigger this workflow
 on:
   pull_request: # Trigger the workflow on pull requests to the main branch
