@@ -13,6 +13,8 @@
 name: Tag Based Test Runs
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
