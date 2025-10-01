@@ -86,7 +86,21 @@ jobs:
           user_name: 'GitHub Actions'
           user_email: 'actions@github.com'
 
+
       # Step 8: Send Slack notification with live report links
+      - name: Notify Slack
+        if: always()
+        run: |
+          html_url="https://$GITHUB_REPOSITORY_OWNER.github.io/${GITHUB_REPOSITORY##*/}/playwright-html-report/index.html"
+          allure_url="https://$GITHUB_REPOSITORY_OWNER.github.io/${GITHUB_REPOSITORY##*/}/allure-report/index.html"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"*Playwright CI Results* 🚀\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <$html_url|Open HTML Report>\n:page_facing_up: *Allure Report*: <$allure_url|Open Allure Report>\n\n:scroll: *Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
+            }" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
+      # Step 9: Send Email notification with live report links
       - name: Send email
         if: always()
         uses: dawidd6/action-send-mail@v3
