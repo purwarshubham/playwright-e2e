@@ -61,6 +61,7 @@ jobs:
           allure_results: allure-results
           allure_report: allure-report
 
+          
       # Step 7b: Deploy Playwright HTML report to GitHub Pages
       - name: Deploy Playwright HTML Report
         if: always()
