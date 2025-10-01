@@ -42,7 +42,7 @@ jobs:
 
       # ---------- Slack Notification ----------
       - name: Notify Slack on failure
-        if: failure()
+        if: always()
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
