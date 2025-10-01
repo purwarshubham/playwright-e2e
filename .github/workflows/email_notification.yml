@@ -108,5 +108,5 @@ jobs:
 
             Logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-          to: "recipient@example.com"
+          to: "purwarshubham@gmail.com"
           from: "Playwright CI <${{ secrets.MAIL_USERNAME }}>"
