@@ -70,7 +70,6 @@ jobs:
           name: playwright-json-results
           path: results.json
 
-
       # Step 8: Notify Slack with summary + link to HTML report artifact
       - name: Notify Slack
         if: always()
