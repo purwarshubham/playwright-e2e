@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('Validate Sum', async ({ page }) => {
+test('Validate Sum', {tag: ['@smoke']}, async ({ page }) => {
     let a = 2; 
     let b = 3
     let sum = a + b;
