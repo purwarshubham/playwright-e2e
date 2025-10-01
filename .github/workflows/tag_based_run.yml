@@ -1,0 +1,49 @@
+# Why:
+
+# Smoke tests = fast feedback (<5 min). Catch obvious failures early.
+# Full regression suite = longer runs, good for nightly.
+
+# How:
+
+# Split your Playwright tests using tags (@smoke, @regression).
+# In GitHub Actions, create two workflows:
+#on: pull_request → run npx playwright test --grep @smoke
+#on: schedule → cron job nightly → run npx playwright test (full suite).
+
+name: Tag Based Test Runs
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test --grep @smoke
+
+      - name: Extract test results
+        id: results
+        run: |
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
+          echo "passed=$passed" >> $GITHUB_OUTPUT
+          echo "failed=$failed" >> $GITHUB_OUTPUT
+          echo "skipped=$skipped" >> $GITHUB_OUTPUT
+
+      # ---------- Slack Notification ----------
+      - name: Notify Slack on failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{
+            \"text\": \":x: Playwright CI Failed!\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n*Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
+          }" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
