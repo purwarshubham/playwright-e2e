@@ -1,0 +1,112 @@
+# Runs your Playwright tests.
+# Generates HTML and Allure reports.
+# Deploys both reports to GitHub Pages.
+# Sends Slack notifications with links that open directly in the browser.
+# Handles permissions correctly with GITHUB_TOKEN.
+
+name: Playwright Tests
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # Step 3: Install dependencies
+      - name: Install deps
+        run: npm ci
+
+      # Step 4: Install Playwright browsers
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium
+
+      # Step 5: Run Playwright tests
+      - name: Run Playwright tests
+        run: npx playwright test || true
+
+      # Step 6: Extract test results from JSON
+      - name: Extract test results
+        id: results
+        run: |
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
+          echo "passed=$passed" >> $GITHUB_OUTPUT
+          echo "failed=$failed" >> $GITHUB_OUTPUT
+          echo "skipped=$skipped" >> $GITHUB_OUTPUT
+
+      # Step 7a: Generate Allure Report
+      - name: Generate Allure Report
+        if: always()
+        uses: simple-elf/allure-report-action@v1.7
+        with:
+          allure_results: allure-results
+          allure_report: allure-report
+
+          
+      # Step 7b: Deploy Playwright HTML report to GitHub Pages
+      - name: Deploy Playwright HTML Report
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          publish_branch: gh-pages
+          destination_dir: playwright-html-report
+          user_name: 'GitHub Actions'
+          user_email: 'actions@github.com'
+
+      # Step 7c: Deploy Allure Report to GitHub Pages
+      - name: Deploy Allure Report
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages
+          destination_dir: allure-report
+          user_name: 'GitHub Actions'
+          user_email: 'actions@github.com'
+
+      # Step 8: Send Slack notification with live report links
+      - name: Send email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "Playwright CI Results - ${{ github.repository }} - ${{ github.ref_name }}"
+          body: |
+            Playwright tests have completed 🚀
+
+            ✅ Passed: ${{ steps.results.outputs.passed }}
+            ❌ Failed: ${{ steps.results.outputs.failed }}
+            ⏩ Skipped: ${{ steps.results.outputs.skipped }}
+
+            🔗 HTML Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/playwright-html-report/index.html
+            🔗 Allure Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/index.html
+
+            Logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          to: "recipient@example.com"
+          from: "Playwright CI <${{ secrets.MAIL_USERNAME }}>"
