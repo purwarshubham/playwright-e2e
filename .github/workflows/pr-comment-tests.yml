@@ -1,0 +1,74 @@
+name: PR Comment Triggered Tests
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  run-tests:
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/run-e2e') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        id: playwright
+        run: |
+          npx playwright test || true
+
+      - name: Parse results
+        id: results
+        run: |
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
+          echo "passed=$passed" >> $GITHUB_OUTPUT
+          echo "failed=$failed" >> $GITHUB_OUTPUT
+          echo "skipped=$skipped" >> $GITHUB_OUTPUT
+
+      - name: Comment back on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { passed, failed } = process.env;
+            const body = `
+            ✅ Playwright Tests Finished
+
+            - Passed: **${{ steps.results.outputs.passed }}**
+            - Failed: **${{ steps.results.outputs.failed }}**
+            - Skip: **${{ steps.results.outputs.skipped }}**
+
+            📊 Full Report: (add GitHub Pages/Allure link here)
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+        env:
+          passed: ${{ steps.results.outputs.passed }}
+          failed: ${{ steps.results.outputs.failed }}
+
+      # ---------- Slack Notification ----------
+      - name: Notify Slack
+        if: always()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{
+            \"text\": \"*Playwright CI Results* 🚀\n:white_check_mark: Passed: *${{ steps.results.outputs.passed }}*\n:x: Failed: *${{ steps.results.outputs.failed }}*\n:fast_forward: Skipped: *${{ steps.results.outputs.skipped }}*\n\n*Repo*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Author*: ${{ github.actor }}\n\n:page_facing_up: *HTML Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n:page_facing_up: *Allure Report*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download Artifact>\n\n:scroll: *Logs*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>\"
+          }" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}

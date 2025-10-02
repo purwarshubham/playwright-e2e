@@ -1,0 +1,54 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout code
+      - uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js + npm cache
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Step 3a: Cache npm dependencies
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      # Step 3b: Cache Playwright browsers
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            pw-${{ runner.os }}-
+
+      # Step 4: Install dependencies
+      - name: Install deps
+        run: npm ci
+
+      # Step 5: Install Playwright browsers (uses cache if available)
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium
+
+      # Step 6: Run Playwright tests
+      - name: Run Playwright tests
+        run: npx playwright test || true
+
+      # ... (rest of your steps: extract results, generate reports, deploy, Slack/email notifications)
