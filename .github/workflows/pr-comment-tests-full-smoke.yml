@@ -1,0 +1,82 @@
+name: PR Comment Triggered Playwright Tests
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  run-tests:
+    if: ${{ github.event.issue.pull_request && (contains(github.event.comment.body, '/run-smoke') || contains(github.event.comment.body, '/run-full')) }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # Decide whether to run smoke or full
+      - name: Decide test type
+        id: decide
+        run: |
+          if [[ "${{ github.event.comment.body }}" == *"/run-smoke"* ]]; then
+            echo "suite=smoke" >> $GITHUB_OUTPUT
+          else
+            echo "suite=full" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Playwright tests
+        id: playwright
+        run: |
+          if [ "${{ steps.decide.outputs.suite }}" = "smoke" ]; then
+            echo "Running Smoke Tests..."
+            npx playwright test --grep @smoke || true
+          else
+            echo "Running Full Test Suite..."
+            npx playwright test || true
+          fi
+
+      - name: Parse results
+        id: results
+        run: |
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
+          echo "passed=$passed" >> $GITHUB_OUTPUT
+          echo "failed=$failed" >> $GITHUB_OUTPUT
+          echo "skipped=$skipped" >> $GITHUB_OUTPUT
+
+      - name: Comment back on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const suite = "${{ steps.decide.outputs.suite }}";
+            const body = `
+            ✅ Playwright *${suite.toUpperCase()}* Tests Finished
+
+            - Passed: **${{ steps.results.outputs.passed }}**
+            - Failed: **${{ steps.results.outputs.failed }}**
+            - Skipped: **${{ steps.results.outputs.skipped }}**
+
+            📊 Full Report: (add GitHub Pages/Allure link here)
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
