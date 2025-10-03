@@ -8,7 +8,7 @@ permissions:
   contents: read
   issues: write
   pull-requests: write
-
+      
 jobs:
   run-tests:
     if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/run-e2e') }}
@@ -32,7 +32,7 @@ jobs:
       - name: Run Playwright tests
         id: playwright
         run: |
-          npx playwright test --reporter=json > results.json || true
+          npx playwright test || true
 
       - name: Parse results
         id: results
@@ -41,7 +41,7 @@ jobs:
           failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
           skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
 
-          # Extract failed test titles for inline PR comment
+          # Capture failed test names (example if your reporter outputs it)
           failed_tests=$(jq -r '[.. | select(.status=="failed") | .title] | join("\n- ")' results.json)
 
           echo "passed=$passed" >> $GITHUB_OUTPUT
@@ -49,34 +49,32 @@ jobs:
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
           echo "failed_tests=$failed_tests" >> $GITHUB_OUTPUT
 
-      - name: Comment back on PR with results
-        uses: actions/github-script@v7
-        with:
-          script: |
-                  const body = `✅ Playwright Tests Finished
-                  - Passed: **${{ steps.results.outputs.passed }}**
-                  - Failed: **${{ steps.results.outputs.failed }}**
-                  - Skipped: **${{ steps.results.outputs.skipped }}**
-                  
-                  // Only add failed tests if there are any
-                  if (parseInt('${{ steps.results.outputs.failed }}') > 0) {
-                        body += `           
-                            ⚠️ Failed Tests:
-                          - ${{ steps.results.outputs.failed_tests }}`;
-                        } 
-
-                        body += `
-                        📊 Full Report: (add GitHub Pages/Allure link here)
-                        `;
-
-                  github.rest.issues.createComment({
-                    issue_number: context.issue.number,
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    body
-                  });
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          - name: Comment back on PR (threaded)
+          uses: actions/github-script@v7
+          with:
+            script: |
+              const commentId = context.payload.comment.id; // ID of triggering comment
+              const passed = parseInt('${{ steps.results.outputs.passed }}');
+              const failed = parseInt('${{ steps.results.outputs.failed }}');
+              const skipped = parseInt('${{ steps.results.outputs.skipped }}');
+  
+              const body = `✅ Playwright Tests Finished
+  
+                              - Passed: **${passed}**
+                              - Failed: **${failed}**
+                              - Skipped: **${skipped}**
+                              
+                              📊 Full Report: (add GitHub Pages/Allure link here)`;
+                              
+                                  await github.rest.issues.createComment({
+                                    issue_number: context.issue.number,
+                                    owner: context.repo.owner,
+                                    repo: context.repo.repo,
+                                    body,
+                                    in_reply_to: commentId // reply in same comment thread
+                                  });
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # ---------- Slack Notification ----------
       - name: Notify Slack
