@@ -38,15 +38,16 @@ jobs:
       - name: Notify Slack (start)
         uses: slackapi/slack-github-action@v1.24.0
         with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
           payload: |
             {
-              "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
               "text": "🚦 Playwright tests started for PR #${{ github.event.pull_request.number || github.sha }}",
               "unfurl_links": false
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
+          
       - name: Run Playwright tests
         run: npx playwright test --reporter=json > results.json || true
 
