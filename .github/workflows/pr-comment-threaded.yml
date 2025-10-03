@@ -42,12 +42,12 @@ jobs:
           skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
 
           # Capture failed test names (example if your reporter outputs it)
-          failed_tests=$(jq -r '[.. | select(.status=="failed") | .title] | join("\n- ")' results.json)
+          # failed_tests=$(jq -r '[.. | select(.status=="failed") | .title] | join("\n- ")' results.json)
 
           echo "passed=$passed" >> $GITHUB_OUTPUT
           echo "failed=$failed" >> $GITHUB_OUTPUT
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
-          echo "failed_tests=$failed_tests" >> $GITHUB_OUTPUT
+          # echo "failed_tests=$failed_tests" >> $GITHUB_OUTPUT
 
           - name: Comment back on PR (threaded)
           uses: actions/github-script@v7
