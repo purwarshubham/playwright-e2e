@@ -46,8 +46,7 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
-          
+         
       - name: Run Playwright tests
         run: npx playwright test --reporter=json > results.json || true
 
