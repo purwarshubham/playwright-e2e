@@ -25,6 +25,12 @@ jobs:
       - name: Install browsers
         run: npx playwright install --with-deps chromium
 
+
+      - name: Debug Slack secrets
+        run: |
+          echo "Channel ID -> ${{ secrets.SLACK_CHANNEL_ID }}"
+          echo "Bot token present? -> ${{ secrets.SLACK_BOT_TOKEN != '' }}"
+
       # Step 1: Notify Slack (start message)
       - name: Notify Slack (start thread)
         id: slack_start
@@ -66,4 +72,3 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-          
