@@ -1,4 +1,5 @@
-name: Playwright Tests
+# Name of the workflow
+name: Send Results in Slack Threaded Notifications
 
 on:
   pull_request:

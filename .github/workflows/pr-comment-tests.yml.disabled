@@ -1,4 +1,4 @@
-name: PR Comment Triggered Tests
+name: PR Comment Triggered Playwright Tests
 
 on:
   issue_comment:

@@ -1,4 +1,4 @@
-name: PR Comment Triggered Playwright Tests
+name: PR Comment Triggered Playwright Tests either full or smoke test 
 
 on:
   issue_comment:

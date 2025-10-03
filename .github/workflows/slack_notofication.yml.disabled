@@ -1,5 +1,5 @@
 # Name of the workflow
-name: Playwright Tests
+name: Send Playwright Results in slack Notifications
 
 # Define the events that trigger this workflow
 on:
