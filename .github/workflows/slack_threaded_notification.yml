@@ -36,6 +36,7 @@ jobs:
 
       # Step 1: Notify Slack (start message)
       - name: Notify Slack (start)
+        id: slack_start
         uses: slackapi/slack-github-action@v1.24.0
         with:
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
