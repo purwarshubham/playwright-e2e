@@ -25,30 +25,23 @@ jobs:
           node-version: 20
           cache: npm
 
-      # ---------------- Install dependencies ----------------
       - name: Install dependencies
         run: npm ci
-
-      # ---------------- Install Playwright browsers ----------------
+  
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-
-      # ---------------- Run Playwright tests with JSON report ----------------
+  
       - name: Run Playwright tests
         id: playwright
         run: |
-          mkdir -p test-results
-          npx playwright test --reporter=json > test-results/results.json || true
+            npx playwright test || true
 
-      # ---------------- Parse Playwright JSON results ----------------
       - name: Parse results
         id: results
         run: |
-          results_file="test-results/results.json"
-          passed=$(jq '[.. | .status? | select(.=="passed")] | length' $results_file)
-          failed=$(jq '[.. | .status? | select(.=="failed")] | length' $results_file)
-          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' $results_file)
-
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
           echo "passed=$passed" >> $GITHUB_OUTPUT
           echo "failed=$failed" >> $GITHUB_OUTPUT
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
