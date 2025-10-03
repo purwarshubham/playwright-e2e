@@ -1,0 +1,67 @@
+name: Playwright Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium
+
+      # Step 1: Notify Slack (start message)
+      - name: Notify Slack (start thread)
+        id: slack_start
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
+              "text": "🚦 Playwright tests started for PR #${{ github.event.pull_request.number || github.sha }}",
+              "unfurl_links": false
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Run Playwright tests
+        run: npx playwright test --reporter=json > results.json || true
+
+      - name: Extract test results
+        id: results
+        run: |
+          passed=$(jq '[.. | .status? | select(.=="passed")] | length' results.json)
+          failed=$(jq '[.. | .status? | select(.=="failed")] | length' results.json)
+          skipped=$(jq '[.. | .status? | select(.=="skipped")] | length' results.json)
+
+          echo "passed=$passed" >> $GITHUB_OUTPUT
+          echo "failed=$failed" >> $GITHUB_OUTPUT
+          echo "skipped=$skipped" >> $GITHUB_OUTPUT
+
+      # Step 2: Notify Slack in thread (final results)
+      - name: Notify Slack (results in thread)
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
+              "thread_ts": "${{ steps.slack_start.outputs.ts }}",
+              "text": "✅ Playwright Tests Finished\n- Passed: *${{ steps.results.outputs.passed }}*\n- Failed: *${{ steps.results.outputs.failed }}*\n- Skipped: *${{ steps.results.outputs.skipped }}*\n\n📊 <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Full Logs>"
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
