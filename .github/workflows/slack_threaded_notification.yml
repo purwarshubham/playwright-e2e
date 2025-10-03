@@ -31,9 +31,12 @@ jobs:
           echo "Channel ID -> ${{ secrets.SLACK_CHANNEL_ID }}"
           echo "Bot token present? -> ${{ secrets.SLACK_BOT_TOKEN != '' }}"
 
+      - name: Debug Slack channel secret
+        run: |
+          echo "Channel ID from secrets: ${{ secrets.SLACK_CHANNEL_ID }}"
+
       # Step 1: Notify Slack (start message)
-      - name: Notify Slack (start thread)
-        id: slack_start
+      - name: Notify Slack (start)
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
