@@ -25,14 +25,14 @@ jobs:
       - name: Install browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Debug Slack secrets
+      - name: Debug Slack channel ID (safe)
         run: |
-          echo "Channel ID -> ${{ secrets.SLACK_CHANNEL_ID }}"
-          echo "Bot token present? -> ${{ secrets.SLACK_BOT_TOKEN != '' }}"
-
-      - name: Debug Slack channel secret
-        run: |
-          echo "Channel ID from secrets: ${{ secrets.SLACK_CHANNEL_ID }}"
+          if [ -z "${{ secrets.SLACK_CHANNEL_ID }}" ]; then
+            echo "❌ SLACK_CHANNEL_ID is EMPTY"
+          else
+            echo "✅ SLACK_CHANNEL_ID is set (non-empty)"
+            echo "Length: $(echo -n '${{ secrets.SLACK_CHANNEL_ID }}' | wc -c) characters"
+          fi
 
       # Step 1: Notify Slack (start message)
       - name: Notify Slack (start)
