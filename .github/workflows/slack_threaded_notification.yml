@@ -25,7 +25,6 @@ jobs:
       - name: Install browsers
         run: npx playwright install --with-deps chromium
 
-
       - name: Debug Slack secrets
         run: |
           echo "Channel ID -> ${{ secrets.SLACK_CHANNEL_ID }}"
